@@ -1,20 +1,17 @@
 import pygame, sys
+from pygame.locals import *
+from Alien import *
 
+pygame.init()
+pygame.display.set_caption('Pygame Platformer')
+WINDOW_SIZE = (1000, 700)
+screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)
+display = pygame.Surface((500, 350))
 clock = pygame.time.Clock()
 
-from pygame.locals import *
-
-pygame.init()  # initiates pygame
-
-pygame.display.set_caption('Pygame Platformer')
-
-WINDOW_SIZE = (1000, 700)
-
-player_anim_count = 0
-
-screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)  # создаем экран
-
-display = pygame.Surface((500, 350))  # инициализируем дисплей, чтобы менять объекты
+def terminate():
+    pygame.quit()
+    sys.exit()
 
 walk_left = [
     pygame.image.load("images/astronaut/astronaut_left/left1.png").convert(),
@@ -33,26 +30,20 @@ walk_right = [
 
 static = pygame.image.load("images/astronaut/static.png")
 
-
+# группы
 bullets = pygame.sprite.Group()
+aliens = pygame.sprite.Group()
 
-
-moving_right = False
-moving_left = False
-vertical_momentum = 0
-air_timer = 0
-
-true_scroll = [0, 0]
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, group, x, y):
-        super().__init__(group)
+    def __init__(self, x, y):
+        super().__init__()
         self.image = pygame.image.load("images/bullet.png").convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
 
-    def update(self, *args):
+    def update(self):
         self.rect.x += 4
 
 
@@ -66,18 +57,8 @@ def load_map(path):  # функция для загрузки карты, счи
         game_map.append(list(row))
     return game_map
 
-
-game_map = load_map('map2')  # Считываем карту из файла map.txt
-
-moon_block = pygame.image.load('dirt.png')  # блок замка
-
-
-
-player_rect = pygame.Rect(100, 220, 35, 50)
-player_x, player_y = player_rect.x, player_rect.y
-
-
-
+def show_restart_menu():
+    pass
 def collision_test(rect, tiles):  # функция, считывающая соприкосновения
     hit_list = []
     for tile in tiles:
@@ -111,96 +92,118 @@ def move(rect, movement, tiles):  # функция изменения коорд
 
 bg = pygame.image.load("images/fon2.png").convert_alpha()
 bg_x = -500
+def start_lvl1():
 
-while True:  # game loop
-    display.blit(pygame.transform.scale(bg, (1000, 500)), (bg_x, 0))
-    true_scroll[0] += (player_rect.x - true_scroll[0] - 152) / 30
-    true_scroll[1] += (player_rect.y - true_scroll[1] - 106) / 30
-    scroll = true_scroll.copy()
-    scroll[0] = int(scroll[0])
-    scroll[1] = int(scroll[1])
-    bullet_x, bullet_y = player_rect.center[0], player_rect.center[1]
-    bullet_rect = pygame.Rect(bullet_x, bullet_y, 14, 7)
-    # фон
+    moving_right = False
+    moving_left = False
+    vertical_momentum = 0
+    air_timer = 0
 
-    tile_rects = []
-    y = 0
-    for layer in game_map:
-        x = 0
-        for tile in layer:
-            if tile == '1':
-                display.blit(moon_block, (x * 30 - scroll[0], y * 30 - scroll[1]))
-            if tile != '0':
-                tile_rects.append(pygame.Rect(x * 30, y * 30, 30, 30))
-            x += 1
-        y += 1
+    true_scroll = [0, 0]
 
-    display.blit(static, (player_rect.x - scroll[0], player_rect.y - scroll[1]))
-    player_movement = [0, 0]
-    if moving_right == True:
-        player_movement[0] += 2
-        display.blit(walk_right[player_anim_count], (player_rect.x - scroll[0], player_rect.y - scroll[1]))
+    player_anim_count = 0
 
+    game_map = load_map('map2')  # Считываем карту из файла map.txt
+    moon_block = pygame.image.load('dirt.png')  # блок замка
 
-    if moving_left == True:
-        if player_rect.x >= 0:
-            player_movement[0] -= 2
+    player_rect = pygame.Rect(100, 220, 35, 50)
+    player_x, player_y = player_rect.x, player_rect.y
 
-            display.blit(walk_left[player_anim_count], (player_rect.x - scroll[0], player_rect.y - scroll[1]))
+    running = True
+    gameplay = True
+    while running:
+        if gameplay:# game loop
+            display.blit(pygame.transform.scale(bg, (1000, 500)), (bg_x, 0))
+            true_scroll[0] += (player_rect.x - true_scroll[0] - 152) / 30
+            true_scroll[1] += (player_rect.y - true_scroll[1] - 106) / 30
+            scroll = true_scroll.copy()
+            scroll[0] = int(scroll[0])
+            scroll[1] = int(scroll[1])
 
-    player_movement[1] += vertical_momentum
-    vertical_momentum += 0.2
-    if vertical_momentum > 5:
-        vertical_momentum = 5
+            # bullet_x, bullet_y = player_rect.center[0], player_rect.center[1]
+            # bullet_rect = pygame.Rect(bullet_x, bullet_y, 14, 7)
+            # фон
 
-    if player_anim_count == 3:
-        player_anim_count = 0
-    else:
-        player_anim_count += 1
+            tile_rects = []
+            y = 0
+            for layer in game_map:
+                x = 0
+                for tile in layer:
+                    if tile == '1':
+                        # print(1)
+                        display.blit(moon_block, (x * 30 - scroll[0], y * 30 - scroll[1]))
+                    if tile == 'a':
+                        a = Alien(aliens, x * 30 - scroll[0], y * 30 - 5 - scroll[1])
+                    if tile != '0':
+                        tile_rects.append(pygame.Rect(x * 30, y * 30, 30, 30))
+                    x += 1
+                y += 1
 
-    player_rect, collisions = move(player_rect, player_movement, tile_rects)
+            display.blit(a.image, a.rect)
 
-    if collisions['bottom'] == True:
-        air_timer = 0
-        vertical_momentum = 0
-    else:
-        air_timer += 1
+            display.blit(static, (player_rect.x - scroll[0], player_rect.y - scroll[1]))
+            player_movement = [0, 0]
+            if moving_right == True:
+                player_movement[0] += 2
+                display.blit(walk_right[int(str(player_anim_count)[0])], (player_rect.x - scroll[0], player_rect.y - scroll[1]))
 
-    # if bullets:
-    #     for (i, el) in enumerate(bullets):
-    #         # display.blit(al)
-    #         print(f"""{player_rect.center}
-    #         {bullet_x, bullet_y}""")
-    #         bullet_rect.x += 4
-    #         # if el.x > 630:
-    #         #     bullets.pop(i)
+            if moving_left == True:
+                if player_rect.x >= 0:
+                    player_movement[0] -= 2
+                    display.blit(walk_left[int(str(player_anim_count)[0])],
+                                 (player_rect.x - scroll[0], player_rect.y - scroll[1]))
 
-    # display.blit(player_img, (player_rect.x - scroll[0], player_rect.y - scroll[1]))
+            player_movement[1] += vertical_momentum
+            vertical_momentum += 0.2
+            if vertical_momentum > 5:
+                vertical_momentum = 5
 
-    for event in pygame.event.get():  # отслеживаний действий игрока
-        if event.type == QUIT:
-            pygame.quit()
-            sys.exit()
-        if event.type == KEYDOWN:
-            if event.key == K_RIGHT or event.key == K_d:
-                moving_right = True
-            if event.key == K_LEFT or event.key == K_a:
-                moving_left = True
-            if event.key == K_UP or event.key == K_w:
-                if air_timer < 6:
-                    vertical_momentum = -5
+            if player_anim_count >= 3:
+                player_anim_count = 0
+            else:
+                player_anim_count += 0.1
 
-        if event.type == KEYUP:
-            if event.key == K_RIGHT or event.key == K_d:
-                moving_right = False
-            if event.key == K_LEFT or event.key == K_a:
-                moving_left = False
-            if event.key == K_SPACE:
-                Bullet(bullets, int(player_rect.center[0] + 55), int(player_rect.center[1] - 230))
+            player_rect, collisions = move(player_rect, player_movement, tile_rects)
 
-    bullets.draw(display)
-    bullets.update()
+            if collisions['bottom'] == True:
+                air_timer = 0
+                vertical_momentum = 0
+            else:
+                air_timer += 1
 
-    screen.blit(pygame.transform.scale(display, WINDOW_SIZE), (0, 0))
-    pygame.display.update()
-    clock.tick(60)
+            for event in pygame.event.get():  # отслеживаний действий игрока
+                if event.type == QUIT:
+                    terminate()
+                if event.type == KEYDOWN:
+                    if event.key == K_RIGHT or event.key == K_d:
+                        moving_right = True
+                    if event.key == K_LEFT or event.key == K_a:
+                        moving_left = True
+                    if event.key == K_UP or event.key == K_w:
+                        if air_timer < 6:
+                            vertical_momentum = -5
+
+                if event.type == KEYUP:
+                    if event.key == K_RIGHT or event.key == K_d:
+                        moving_right = False
+                    if event.key == K_LEFT or event.key == K_a:
+                        moving_left = False
+                    if event.key == K_SPACE:
+                        b = Bullet(int(player_rect.center[0] - scroll[0]), int(player_rect.center[1] - scroll[1]))
+                        bullets.add(b)
+
+            # aliens.update()
+            # aliens.draw(display)
+            # print(aliens)
+
+            bullets.draw(display)
+            bullets.update()
+
+            screen.blit(pygame.transform.scale(display, WINDOW_SIZE), (0, 0))
+            pygame.display.update()
+            clock.tick(60)
+        else:
+            show_restart_menu()
+
+if __name__ == "__main__":
+    start_lvl1()
