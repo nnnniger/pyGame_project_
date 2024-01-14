@@ -4,8 +4,9 @@ from endless import *
 
 pygame.init()
 pygame.display.set_caption('Start menu')
-WINDOW_SIZE = (1000, 700)
+WINDOW_SIZE = width, height = (1000, 700)
 screen = pygame.display.set_mode(WINDOW_SIZE)
+
 clock = pygame.time.Clock()
 
 white = (255, 255, 255)
@@ -23,10 +24,12 @@ def terminate():
     pygame.quit()
     sys.exit()
 
+
 def show_text(text, size, x, y):
     font = pygame.font.Font(None, size)
     text_surface = font.render(text, True, white)
     screen.blit(text_surface, (x, y))
+
 
 def draw_button(x, y, width, height, color_normal, color_hover, text, action):
     mouse = pygame.mouse.get_pos()
@@ -42,27 +45,58 @@ def draw_button(x, y, width, height, color_normal, color_hover, text, action):
     pygame.draw.rect(screen, border_color, (x, y, width, height), 7)
     show_text(text, 50, x + 20, y + 20)
 
+
+def yes_action():
+    terminate()
+
+
+def no_action():
+    print("Resuming the game...")
+    is_quit = False
+    start_screen()
+
+
+def quit():
+    screen.fill((0, 0, 0))
+    show_text("Are you sure to exit?", 48, width // 2 - 185, height // 3)
+    draw_button(300, 400, 100, 70, purple_normal, purple_hover, "Yes", yes_action)
+    draw_button(550, 400, 90, 70, purple_normal, purple_hover, "No", no_action)
+
+
+
+
 def start_screen():
     bg_x, bg_y = 0, 0
     bg_anim_count = 0
 
+    is_quit = None
+
     while True:
+
+        # print(is_quit)
         bg_image = list_for_bg_images[bg_anim_count % len(list_for_bg_images)]
         bg_image = pygame.transform.scale(bg_image, WINDOW_SIZE)
 
         screen.blit(bg_image, (bg_x, bg_y))
         bg_anim_count += 1
 
-        draw_button(435, 255, 130, 70, purple_normal, purple_hover, "Story", start_lvl1)
-        draw_button(410, 355, 180, 70, purple_normal, purple_hover, "Endless", start_endless)
+        draw_button(435, 255, 130, 70, purple_normal, purple_hover, "Story", start_lvl1_)
+        draw_button(410, 355, 180, 70, purple_normal, purple_hover, "Parkour", start_endless)
+
+
+        if is_quit == True:
+            quit()
 
         for event in pygame.event.get():  # отслеживаний действий игрока
             if event.type == QUIT:
-                terminate()
+                is_quit = True
+                print(1)
+
+        # print(is_quit)
+
 
         pygame.display.update()
         clock.tick(60)
-
 
 if __name__ == '__main__':
     start_screen()

@@ -1,4 +1,10 @@
-def load_map(path):  # функция для загрузки карты, считывает карту из файла
+import os
+import sys
+
+import pygame
+
+
+def load_map(path):  # функция для загрузки карты, считывает карту из txt файла
     f = open(path + '.txt', 'r')
     data = f.read()
     f.close()
