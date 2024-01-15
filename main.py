@@ -61,8 +61,22 @@ def quit():
     show_text("Are you sure to exit?", 48, width // 2 - 185, height // 3)
     draw_button(300, 400, 100, 70, purple_normal, purple_hover, "Yes", yes_action)
     draw_button(550, 400, 90, 70, purple_normal, purple_hover, "No", no_action)
+    if pygame.mouse.get_focused():
+        cursor.update()
+        cursor.draw(screen)
 
 
+def get_mouse_pos(mouse_pos):
+    cursor_sprite.rect.x = mouse_pos[0]
+    cursor_sprite.rect.y = mouse_pos[1]
+
+
+cursor = pygame.sprite.Group()
+cursor_sprite = pygame.sprite.Sprite()
+cursor_sprite.image = pygame.image.load("images/cursor.png")
+cursor_sprite.rect = cursor_sprite.image.get_rect()
+
+cursor.add(cursor_sprite)
 
 
 def start_screen():
@@ -72,7 +86,7 @@ def start_screen():
     is_quit = None
 
     while True:
-
+        pygame.mouse.set_visible(False)
         # print(is_quit)
         bg_image = list_for_bg_images[bg_anim_count % len(list_for_bg_images)]
         bg_image = pygame.transform.scale(bg_image, WINDOW_SIZE)
@@ -83,6 +97,9 @@ def start_screen():
         draw_button(435, 255, 130, 70, purple_normal, purple_hover, "Story", start_lvl1_)
         draw_button(410, 355, 180, 70, purple_normal, purple_hover, "Parkour", start_endless)
 
+        if pygame.mouse.get_focused():
+            cursor.update()
+            cursor.draw(screen)
 
         if is_quit == True:
             quit()
@@ -90,13 +107,14 @@ def start_screen():
         for event in pygame.event.get():  # отслеживаний действий игрока
             if event.type == QUIT:
                 is_quit = True
-                print(1)
+            if event.type == pygame.MOUSEMOTION:
+                get_mouse_pos(event.pos)
 
         # print(is_quit)
 
-
         pygame.display.update()
         clock.tick(60)
+
 
 if __name__ == '__main__':
     start_screen()
