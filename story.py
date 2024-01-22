@@ -13,21 +13,30 @@ clock = pygame.time.Clock()
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, player_rect, bullet_rects):
         super().__init__()
         self.image = pygame.image.load("images/bullet.png").convert_alpha()
         self.flip_image = pygame.image.load("images/bullet_flip.png").convert_alpha()
+        self.bullet_rects = bullet_rects
+        self.b_rect = pygame.Rect(int(player_rect.center[0]), int(player_rect.center[1]), self.image.get_height(),
+                                  self.image.get_width())
+        self.bullet_rects.append(self.b_rect)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+        # print(self.b_rect, self.rect)
 
-    def update(self):
+    def update(self, a_rects):
         self.mask = pygame.mask.from_surface(self.image)
         if self in bullets_right:
-            self.rect.x += 4
+            self.b_rect.x += 5
+            self.rect.x += 5
         else:
             self.image = self.flip_image
-            self.rect.x -= 4
+            self.b_rect.x -= 5
+            self.rect.x -= 5
+
+        # return a_rects
 
 
 class Portal(pygame.sprite.Sprite):
@@ -36,7 +45,7 @@ class Portal(pygame.sprite.Sprite):
         self.close_portal = pygame.image.load("images/portal/close_portal.png")
         self.open_portal = pygame.image.load("images/portal/open_portal.png")
         self.image = self.close_portal
-        self.rect_for_collide = pygame.Rect(0, 280,self.image.get_height(), self.image.get_width())
+        self.rect_for_collide = pygame.Rect(0, 280, self.image.get_height(), self.image.get_width())
         self.rect = self.image.get_rect()
         self.rect.bottom = y + 30
         self.rect.left = (x - self.rect.w // 2) + 35
@@ -47,6 +56,7 @@ class Portal(pygame.sprite.Sprite):
                 self.image = self.open_portal
             else:
                 display_centered_text("Find the key to open the portal", (255, 255, 255))
+
 
 class Key(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -63,7 +73,6 @@ class Key(pygame.sprite.Sprite):
         if self.rect_for_collide.colliderect(player_rect):
             is_key = True
         return is_key
-
 
 
 class Health(pygame.sprite.Sprite):
@@ -118,11 +127,13 @@ cursor_sprite.rect = cursor_sprite.image.get_rect()
 
 cursor.add(cursor_sprite)
 
+
 def display_centered_text(text, color):
     font = pygame.font.SysFont(None, 24)
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect(center=(display_width // 2, display_height // 4))
     display.blit(text_surface, text_rect)
+
 
 def create_restart_button(action):
     WHITE = (255, 255, 255)
@@ -236,6 +247,7 @@ def start_lvl1_():
     true_scroll = [0, 0]
 
     player_anim_count = 0
+    a = 1
 
     game_map = load_map('map2')  # Считываем карту из файла map.txt
     moon_block = pygame.image.load('images/dirt.png')  # блок замка
@@ -254,6 +266,10 @@ def start_lvl1_():
     key_blit = True
     running = True
     gameplay = True
+    # lstt = []
+    bullets_rects = list()
+    lsttt_of_aliens_coords = [(6, 2), (8, 2), (22, 5), (26, 5), (67, 7), (70, 7), (24, 11), (30, 11), (8, 12), (41, 13),
+                              (44, 13), (67, 13), (72, 13)]
 
     while running:
         if gameplay:
@@ -264,7 +280,6 @@ def start_lvl1_():
             scroll = true_scroll.copy()
             scroll[0] = int(scroll[0])
             scroll[1] = int(scroll[1])
-
 
             tile_rects = []
             y = 0
@@ -277,6 +292,13 @@ def start_lvl1_():
                         portal = Portal(x * 30 - scroll[0], y * 30 - scroll[1])
                     if tile == "k":
                         key = Key(x * 30 - scroll[0], y * 30 - scroll[1])
+                    if tile == "a":
+                        pass
+                        # lstt.append((x, y))
+                        # create_aliens(scroll)
+
+                        # aliens.add(a1)
+                        # a -= 1
                     if tile == '1':
                         tile_rects.append(pygame.Rect(x * 30, y * 30, 30, 30))
                         moon_sprite.rect = pygame.Rect(x * 30, y * 30, 30, 30)
@@ -285,11 +307,15 @@ def start_lvl1_():
                     x += 1
                 y += 1
 
-            # if a > 0:
-            #     a1 = Alien(aliens, 200 - scroll[0], 220 - scroll[1])
-            #     a -= 1
-
             display.blit(static, (player_rect.x - scroll[0], player_rect.y - scroll[1]))
+
+            for i in lsttt_of_aliens_coords:
+                a = Alien(i[0] * 30 - scroll[0], i[1] * 30 - scroll[1] - 5)
+                # aliens.add(a)
+                display.blit(a.image, (a.rect.x, a.rect.y))
+                a_rects, bullet_rects, a.image, lsttt_of_aliens_coords = a.update(player_rect, hp, bullets_rects, lsttt_of_aliens_coords, i)
+
+
             player_movement = [0, 0]
             if moving_right == True:
                 player_movement[0] += 2
@@ -326,6 +352,8 @@ def start_lvl1_():
 
             display.blit(health.image, (0, 0))
 
+            # print(aliens)
+
             for event in pygame.event.get():
                 if event.type == QUIT:
                     terminate()
@@ -349,7 +377,9 @@ def start_lvl1_():
                         moving_left = False
                     if event.key == K_SPACE:
                         if count_of_bullets > 0:
-                            b = Bullet(int(player_rect.center[0] - scroll[0]), int(player_rect.center[1] - scroll[1]))
+
+                            b = Bullet(int(player_rect.center[0] - scroll[0]), int(player_rect.center[1] - scroll[1]),
+                                       player_rect, bullets_rects)
                             count_of_bullets -= 1
                             if moving_left:
                                 bullets_left.add(b)
@@ -361,34 +391,29 @@ def start_lvl1_():
             if hp <= 0:
                 gameplay = False
 
-            # aliens.update(scroll)
-            # aliens.draw(display)
+            # hp = a1.update(player_rect, hp, bullets_left, bullets_right)
+            # hp = a2.update(player_rect, hp, bullets_left, bullets_right)
+            aliens.draw(display)
             # print(aliens)
             # !!!!!!!!!!!!!!!!!!!!!!
-
 
             portal.update(player_rect, key_blit)
 
             display.blit(portal.image, (portal.rect.x, portal.rect.y))
 
-
             if key.update(player_rect, is_key) == True:
                 key_blit = False
 
             if key_blit:
-
                 display.blit(key.image, (key.rect.x, key.rect.y))
 
             bullets_left.draw(display)
-            bullets_left.update()
+            bullets_left.update(a_rects)
 
             bullets_right.draw(display)
-            bullets_right.update()
-
-
+            bullets_right.update(a_rects)
 
             health.update(hp)
-
             screen.blit(pygame.transform.scale(display, WINDOW_SIZE), (0, 0))
             pygame.display.update()
             clock.tick(60)

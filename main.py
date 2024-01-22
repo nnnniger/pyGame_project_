@@ -1,9 +1,9 @@
 from pygame import QUIT
 from story import *
-from endless import *
+from parkour import *
 
 pygame.init()
-pygame.display.set_caption('Start menu')
+pygame.display.set_caption('Legend of Battles: Pixel Battle in Space')
 WINDOW_SIZE = width, height = (1000, 700)
 screen = pygame.display.set_mode(WINDOW_SIZE)
 
@@ -95,7 +95,7 @@ def start_screen():
         bg_anim_count += 1
 
         draw_button(435, 255, 130, 70, purple_normal, purple_hover, "Story", start_lvl1_)
-        draw_button(410, 355, 180, 70, purple_normal, purple_hover, "Parkour", start_endless)
+        draw_button(410, 355, 180, 70, purple_normal, purple_hover, "Parkour", start_parkour)
 
         if pygame.mouse.get_focused():
             cursor.update()
