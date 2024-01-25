@@ -1,6 +1,5 @@
-from pygame import QUIT
+from finish import *
 from story import *
-from parkour import *
 
 pygame.init()
 pygame.display.set_caption('Legend of Battles: Pixel Battle in Space')
@@ -20,38 +19,11 @@ for i in range(1, 201):
     list_for_bg_images.append(pygame.image.load(f'images/menu_bg/{i}.png'))
 
 
-def terminate():
-    pygame.quit()
-    sys.exit()
-
-
-def show_text(text, size, x, y):
-    font = pygame.font.Font(None, size)
-    text_surface = font.render(text, True, white)
-    screen.blit(text_surface, (x, y))
-
-
-def draw_button(x, y, width, height, color_normal, color_hover, text, action):
-    mouse = pygame.mouse.get_pos()
-    click = pygame.mouse.get_pressed()
-
-    if x + width > mouse[0] > x and y + height > mouse[1] > y:
-        pygame.draw.rect(screen, color_hover, (x, y, width, height))
-        if click[0] == 1:
-            action()
-    else:
-        pygame.draw.rect(screen, color_normal, (x, y, width, height))
-
-    pygame.draw.rect(screen, border_color, (x, y, width, height), 7)
-    show_text(text, 50, x + 20, y + 20)
-
-
 def yes_action():
     terminate()
 
 
 def no_action():
-    print("Resuming the game...")
     is_quit = False
     start_screen()
 
@@ -64,19 +36,6 @@ def quit():
     if pygame.mouse.get_focused():
         cursor.update()
         cursor.draw(screen)
-
-
-def get_mouse_pos(mouse_pos):
-    cursor_sprite.rect.x = mouse_pos[0]
-    cursor_sprite.rect.y = mouse_pos[1]
-
-
-cursor = pygame.sprite.Group()
-cursor_sprite = pygame.sprite.Sprite()
-cursor_sprite.image = pygame.image.load("images/cursor.png")
-cursor_sprite.rect = cursor_sprite.image.get_rect()
-
-cursor.add(cursor_sprite)
 
 
 def start_screen():
@@ -104,13 +63,11 @@ def start_screen():
         if is_quit == True:
             quit()
 
-        for event in pygame.event.get():  # отслеживаний действий игрока
+        for event in pygame.event.get():
             if event.type == QUIT:
                 is_quit = True
             if event.type == pygame.MOUSEMOTION:
                 get_mouse_pos(event.pos)
-
-        # print(is_quit)
 
         pygame.display.update()
         clock.tick(60)
